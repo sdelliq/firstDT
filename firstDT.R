@@ -1,6 +1,7 @@
 install.packages("renv")
 
 install.packages('readxl')
+install.packages("dplyr")
 install.packages('tidyr')
 install.packages("splitstackshape")
 install.packages('openxlsx')
@@ -23,8 +24,9 @@ renv::snapshot()
 #Reads all the sheets
 #Puts all the sheets into different DFs into one DF
 #Assigns to each DF the name of its sheet
-sheets <- excel_sheets('DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx')
-tibble <- lapply(sheets, function(x) read_excel('DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx', sheet = x))
+file <- 'C:/Users/sophia.dellarciprete/Documents/firstDT/DATA/DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx'
+sheets <- excel_sheets(file)
+tibble <- lapply(sheets, function(x) read_excel(file, sheet = x))
 DT <- lapply(tibble, as.data.frame)
 names(DT) <- sheets
 
