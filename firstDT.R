@@ -1,5 +1,4 @@
 install.packages("renv")
-
 install.packages('readxl')
 install.packages("dplyr")
 install.packages('tidyr')
@@ -8,7 +7,7 @@ install.packages('openxlsx')
 install.packages('rlang')
 install.packages("readxl")
 
-
+library(renv)
 library(readxl)
 library(dplyr)
 library(tidyr)
