@@ -1,39 +1,42 @@
+#For the environment 
 install.packages("renv")
-install.packages('readxl')
-install.packages("dplyr")
-install.packages('tidyr')
-install.packages("splitstackshape")
-install.packages('openxlsx')
-install.packages('rlang')
-install.packages("readxl")
-
 library(renv)
-library(readxl)
-library(dplyr)
-library(tidyr)
-library(rlang)
-library(openxlsx)
-
 renv::init() 
 #renv::install() #Only used when installing the packages for the first time
 #renv::update() #Only used if we want to update packages 
 renv::snapshot()
 
-#Gets the names of the sheets
-#Reads all the sheets
-#Puts all the sheets into different DFs into one DF
-#Assigns to each DF the name of its sheet
+install.packages('readxl')
+install.packages("dplyr")
+install.packages('tidyr')
+install.packages("stringr")
+install.packages('openxlsx')
+install.packages('rlang')
+install.packages("readxl")
+
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(rlang)
+library(openxlsx)
+library(stringr)
+
+source("Functions.R")
+
+#Gets the names of the sheets, reads them, and Puts them into different DFs into one DF
 file <- 'Data/DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx.xlsx'
 sheets <- excel_sheets(file)
 tibble <- lapply(sheets, function(x) read_excel(file, sheet = x))
 DT <- lapply(tibble, as.data.frame)
 names(DT) <- sheets
 
+#Create a DF for each sheet 
+NDGP <- DT$NDG
 LOANS_Raw <- DT$LOANS
 ASSET <- DT$ASSET
 
-#DEALING WITH THE LOANS DATAFRAME
 
+#DEALING WITH THE LOANS DATAFRAME
 LOANS <- LOANS_Raw
 #Delete first two rows and renames the columns 
 colnames(LOANS) <- LOANS[2, ] 
@@ -97,7 +100,8 @@ Bankruptcy <- na.omit(Bankruptcy)
 NDG_N <- NDG_N %>% select(- c(Bankruptcy.Proceedings, Bankruptcy.Code.Proceedings, Bankruptcy.Proceedings.NOTE)) 
 
 #Join the table we had on the other sheet to the NDG
-#NDG_N <- NDG_N %>% inner_join(Group_Of_Borrowers, by="NDG")
+NDG_N <- NDG_N %>% select(-Group)
+NDG_N <- NDG_N %>% inner_join(Group_Of_Borrowers, by="NDG")
 
 #Create Guarantors without NA and separating the rows with multiple values. It then adds the 
 Guarantors <- LOANSP %>% select (NDG, Guarantors.Name, TAX.CODE.for.Guarantors) %>% distinct()

@@ -1,10 +1,5 @@
-library(readxl)
-library(dplyr)
-library(tidyr)
-library(rlang)
+#Before starting here we have to read the file on firstDT
 
-#Create a DF for each sheet 
-NDGP <- DT$NDG
 
 #DEALING WITH THE NDG DATAFRAME
 NDG <- NDGP
