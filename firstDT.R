@@ -46,10 +46,31 @@ rownames(LOANS) <- 1:nrow(LOANS)
 #Cleans the column names and gives all of them to the same name convention
 colnames(LOANS) <- clean_column_names(colnames(LOANS))
 
+#Rename columns to make them match the name they're supposed to have (seen on the Metadata file)
+LOANS <- LOANS %>% rename("id.bor" = ndg, "type" = type.of.credit, "gbv.original" = total.gbv, "gbv.residual" = residual.position, "principal" = gbv.capital, "interest" = gbv.interest, "expenses" = gbv.expenses, "date.status" = default.date)
+
 #Take the UTPs from the date
-LOANS$UTP <- LOANS$Default.Date
-LOANS <-  LOANS %>% relocate(UTP, .after = Default.Date)
-LOANS$UTP <- replace(LOANS$UTP, LOANS$UTP!="UTP", NA)
+LOANS$status <- LOANS$date.status
+LOANS <-  LOANS %>% relocate(status, .after = date.status)
+LOANS$status <- replace(LOANS$status, LOANS$status!="UTP", "BAD")
+
+
+LOANS <- LOANS %>%
+  mutate(
+    id.group = NA,
+    originator = NA,
+    ptf = NA,
+    cluster.ptf = NA,
+    penalties = NA,
+    date.origination = NA,
+    date.last.act = NA,
+    flag.imputed = NA
+  )
+LOANS_FROM_METADATA <- LOANS %>% select (id.bor, id.group, originator, ptf, cluster.ptf, type, status, gbv.original, gbv.residual, principal, interest, penalties, expenses, date.origination, date.status, date.last.act, flag.imputed)
+LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(id.bor, id.group, originator, ptf, cluster.ptf, type, status), as.character) )
+LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(gbv.original, gbv.residual, principal, interest, penalties, expenses), as.numeric))
+LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(date.origination, date.status, date.last.act, flag.imputed), convertToDate))
+
 
 # Create NDG_DEP and LOANS_DEP according to their functional dependencies
 new_data_frames <- dependent.Tables(LOANS, 0.45)
@@ -58,6 +79,7 @@ colnames(NDG_N) <- delete_word_from_col(colnames(NDG_N),"NDG.")
 NDG_N <- NDG_N %>% distinct() 
 LOANSP <- as.data.frame(new_data_frames[2])
 colnames(LOANSP) <- delete_word_from_col(colnames(LOANSP),"ID.Loans.")
+
 
 #Turn - into NAs
 LOANSP <- apply(LOANSP, 2, function(col) replace(col, col == "-", NA))
