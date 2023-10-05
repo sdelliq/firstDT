@@ -1,10 +1,26 @@
 #Functions
 
+#Reads a file a returns a List with one dataframe for each excel sheet
+#Gets the names of the sheets, reads them, and Puts them into different DFs into one DF
+read_doc_and_save_df <- function(file_path) {
+  # Read all sheets from the Excel file
+  sheets <- excel_sheets(file_path)
+  tibble_list <- lapply(sheets, function(x) read_excel(file_path, sheet = x))
+  
+  # Convert each sheet to a data frame
+  DT <- lapply(tibble_list, as.data.frame)
+  
+  # Set names for the list elements based on sheet names
+  names(DT) <- sheets
+  
+  # Return the list of data frames
+  return(DT)
+}
 
+
+#Deletes a given word from all the columns in which it appears
 delete_word_from_col <- function(names, wordToDel) {
-  
   names <- gsub(wordToDel,"", names)
-  
   return(names)
 }
 
