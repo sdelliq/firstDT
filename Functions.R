@@ -20,6 +20,9 @@ clean_column_names <- function(names) {
   names <- gsub("\\.{2,}", ".", names)
   names <- gsub("\\.$", "", names)
   
+  # Convert all characters to lowercase
+  names <- tolower(names)
+  
   return(names)
 }
 # Running example:
