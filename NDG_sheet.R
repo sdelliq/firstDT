@@ -1,6 +1,13 @@
-#Before starting here we have to read the file on firstDT
+#This is mostly the first code we wrote. The normalization and cleaning made by us without creating functions. 
 
+source("Library.R")
+source("Functions.R")
 
+file <- 'Data/DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx.xlsx'
+DT <- read_doc_and_save_df(file)
+
+#Create a DF for the NDG sheet
+NDGP <- DT$NDG
 #DEALING WITH THE NDG DATAFRAME
 NDG <- NDGP
 
