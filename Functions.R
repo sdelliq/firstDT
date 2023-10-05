@@ -1,21 +1,18 @@
 #Functions
 
 #Reads a file a returns a List with one dataframe for each excel sheet
-#Gets the names of the sheets, reads them, and Puts them into different DFs into one DF
 read_doc_and_save_df <- function(file_path) {
-  # Read all sheets from the Excel file
   sheets <- excel_sheets(file_path)
   tibble_list <- lapply(sheets, function(x) read_excel(file_path, sheet = x))
-  
   # Convert each sheet to a data frame
   DT <- lapply(tibble_list, as.data.frame)
-  
   # Set names for the list elements based on sheet names
   names(DT) <- sheets
-  
-  # Return the list of data frames
   return(DT)
 }
+#Running example:
+#file <- 'Data/file.xlsx'
+#DT <- read_doc_and_save_df(file)
 
 
 #Deletes a given word from all the columns in which it appears
@@ -23,6 +20,8 @@ delete_word_from_col <- function(names, wordToDel) {
   names <- gsub(wordToDel,"", names)
   return(names)
 }
+#Running example:
+#colnames(NDG_N) <- delete_word_from_col(colnames(NDG_N),"NDG.")
 
 
 clean_column_names <- function(names) {
@@ -45,19 +44,18 @@ clean_column_names <- function(names) {
 # colnames(df) <- clean_column_names(colnames(df))
 
 
-#### This function identifies columns that its percentage in terms of NA values exceedes a certain threshold imposed by us
-####first we get the number of rows in the data frame and then calculate the threshold for NA values 
-#### then based on the result we identify the columns that exceed that result and return them 
+# Identifies columns whose percentage in terms of NA values exceeds a certain threshold imputed as parameter
 columns_to_delete <- function(dataframe, threshold = 0.8) {
   total_rows <- nrow(dataframe)
   na_threshold <- total_rows * threshold
   na_columns <- colnames(dataframe)[colSums(is.na(dataframe)) >= na_threshold]
   return(na_columns)
 }
+# Running example:
 #cols_to_delete <-  columns_to_delete(dataframe,threshold = 0.8)
 #print(cols_to_delete)
 
-
+#Returns the possible primary keys of a given dataframe, in the form of a list with the column, its uniqueness and weather it has NAs or not
 possiblePKs <- function(df){ 
   # Calculate the ratio of uniqueness as a numeric vector
   uniqueness_ratios <- apply(df, 2, function(x) {
@@ -81,7 +79,7 @@ possiblePKs <- function(df){
 }
 
 
-# Function to split values, replace NA with "NA", and create two rows
+# Function to split values, and create two rows when there's one with multiple values divided by a separator
 divide_column_by_character <- function(dataframe, column_name, separator) {
   dataframe %>%
     mutate(across({{column_name}}, ~ ifelse(is.na(.), "NA", .))) %>%
