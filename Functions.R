@@ -84,7 +84,8 @@ divide_column_by_character <- function(dataframe, column_name, separator) {
   dataframe %>%
     mutate(across({{column_name}}, ~ ifelse(is.na(.), "NA", .))) %>%
     rowwise() %>%
-    separate_rows({{column_name}}, sep = separator, convert = TRUE)
+    separate_rows({{column_name}}, sep = separator, convert = TRUE) %>%
+    mutate_all(~str_trim(., 'left')) %>% mutate_all(~str_trim(., 'right'))
 }
 # Running example:
 # NDG_N <- divide_column_by_character(NDG_N, "Judicial.Procedures.CODE", "\\+ ")
@@ -200,7 +201,11 @@ dependent.Tables <- function(originalDf, percentage){
 # new_data_frames <- dependent.Tables(LOANSP, 0.45)
 
 
-
+writeWB <- function(wb, nameOfSheet, dataToWrite){
+  addWorksheet(wb, sheetName = nameOfSheet)
+  writeData(wb, sheet = nameOfSheet, x = dataToWrite)
+  setColWidths(wb, sheet = nameOfSheet, cols = 1:ncol(dataToWrite), widths = "auto")
+}
 
 
 

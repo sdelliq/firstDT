@@ -1,4 +1,7 @@
-#For the environment 
+###-----------------------------------------------------------------------###
+#-----             a) Environment                                       -----         
+###-----------------------------------------------------------------------###
+
 install.packages("renv")
 library(renv)
 renv::init() 
@@ -6,13 +9,20 @@ renv::init()
 #renv::update() #Only used if we want to update packages 
 renv::snapshot()
 
+###-----------------------------------------------------------------------###
+#-----             b) Importing libraries and functions                 -----         
+###-----------------------------------------------------------------------###
 
-#Importing the libraries and functions
 source("Library.R")
 source("Functions.R")
 
 file <- 'Data/DATATAPE INVESTITORE  BCC ANNIA CUTOFF 25102022.xlsx.xlsx'
 DT <- read_doc_and_save_df(file)
+
+###-----------------------------------------------------------------------###
+#-----             c) Code                                              -----         
+###-----------------------------------------------------------------------###
+
 
 #Create a DF for the NDG sheet
 NDGP <- DT$NDG
