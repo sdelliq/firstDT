@@ -36,10 +36,12 @@ LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>%
     date.last.act = NA,
     flag.imputed = NA
   )
-
+#Changing types to what they should be according to the metadata
+LOANS_FROM_METADATA$status <- factor(LOANS_FROM_METADATA$status, levels = c('utp', 'bad', 'bonis', 'past due'))
 LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(id.bor, id.group, originator, ptf, cluster.ptf, type, status), as.character) )
 LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(gbv.original, gbv.residual, principal, interest, penalties, expenses), as.numeric))
-LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(date.origination, date.status, date.last.act, flag.imputed), convertToDate))
+LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(flag.imputed= as.integer(flag.imputed))
+LOANS_FROM_METADATA <- LOANS_FROM_METADATA %>% mutate(across(c(date.origination, date.status, date.last.act), convertToDate))
 LOANS_FROM_METADATA$gbv.residual <- LOANS_FROM_METADATA$gbv.original
 
 #type: Other|Credit Cards|Bank Accounts|Personal Loans|Mortgages|Mortgages (Fondiario)
@@ -60,7 +62,7 @@ LOANS_FROM_METADATA$type <- LOANS_FROM_METADATA$type %>% lapply(function(x){
   else if(x == "credito di firma"){
     x <- 'Other'
   }
-  else if(str_match(x, "fondario")){
+  else if(str_match(x, "fondiario")){
     x <- 'Mortgages (Fondiario)'
   }
   else if(str_match(x, "credit card")){

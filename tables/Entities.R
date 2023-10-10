@@ -17,6 +17,7 @@ ENTITIES$id.entity <- paste0("e", seq_len(nrow(ENTITIES)))
 
 # type.subject: if there’s a CF is a person, if its piva it’s corporate
 ENTITIES <- add_type_subject_column(ENTITIES)
+ENTITIES$type.subject <- factor(ENTITIES$type.subject, levels = c('other', 'confidi', 'corporate', 'individual'))
 
 #age: number taken from the codice fiscale
 ENTITIES <- add_age_column(ENTITIES)
@@ -26,9 +27,11 @@ ENTITIES <- add_age_range_column(ENTITIES)
 
 # sex= type: factor. Taken also from the CF
 ENTITIES <- add_sex_column(ENTITIES)
+ENTITIES$sex <- factor(ENTITIES$sex, levels = c('m', 'f'))
 
 # type:pg (persona giuridica) = type:factor. take SRL, S.R.L., SRLS and more. 
 ENTITIES <- add_type.pg_column(ENTITIES)
+ENTITIES$type.pg <- factor(ENTITIES$type.pg, levels = c('other', 'di', 'ss', 'sas', 'snc', 'spa', 'srl', 'sc'))
 
 ENTITIES <- ENTITIES %>%
   mutate(
@@ -65,6 +68,33 @@ if(any(ENTITIES$city %in% repeated_cities)){
 # Merge specific columns from 'city_info' into 'ENTITIES'
 ENTITIES <- ENTITIES %>%
   left_join(GEO.metadata %>% select(city, province, region, area), by = c("city" = "city"))
+
+ENTITIES$province <- factor(ENTITIES$province, levels = c(
+  "abroad", "agrigento", "alessandria", "ancona", "aosta", "arezzo", "ascoli piceno", "asti", "avellino",
+  "bari", "barletta andria trani", "belluno", "benevento", "bergamo", "biella", "bologna", "bolzano", "brescia",
+  "brindisi", "cagliari", "caltanissetta", "campobasso", "caserta", "catania", "catanzaro", "chieti", "como", 
+  "cosenza", "cremona", "crotone", "cuneo", "enna", "fermo", "ferrara", "firenze", "foggia", "forli' cesena", 
+  "frosinone", "genova", "gorizia", "grosseto", "imperia", "isernia", "l'aquila", "la spezia", "latina", "lecce", 
+  "lecco", "livorno", "lodi", "lucca", "macerata", "mantova", "massa carrara", "matera", "messina", "milano", 
+  "modena", "monza brianza", "napoli", "novara", "nuoro", "oristano", "padova", "palermo", "parma", "pavia", 
+  "perugia", "pesaro urbino", "pescara", "piacenza", "pisa", "pistoia", "pordenone", "potenza", "prato", "ragusa", 
+  "ravenna", "reggio calabria", "reggio emilia", "rieti", "rimini", "roma", "rovigo", "salerno", "sassari", "savona", 
+  "siena", "siracusa", "sondrio", "sud sardegna", "taranto", "teramo", "terni", "torino", "trapani", "trento", 
+  "treviso", "trieste", "udine", "varese", "venezia", "verbano cusio ossola", "vercelli", "verona", "vibo valentia", 
+  "vicenza", "viterbo"
+))
+
+ENTITIES$region <- factor(ENTITIES$region, levels =c(
+  "abroad", "abruzzo", "basilicata", "calabria", "campania", "emilia romagna", "friuli venezia giulia", 
+  "lazio", "liguria", "lombardia", "marche", "molise", "piemonte", "puglia", "sardegna", "sicilia", "toscana", 
+  "trentino alto adige", "umbria", "valle d'aosta", "veneto"
+))
+
+ENTITIES$area <- factor(ENTITIES$area, levels =c(
+  "abroad", "islands", "south", "center", "north-east", "north-west"
+))
+
+
 
 #I select the columns in the order I want (the order in Metadata)
 ENTITIES <- ENTITIES %>% select(id.entity, name, cf.piva, type.subject, dummy.info, sex, range.age, age, solvency, income.pf, type.pg, status.pg, date.cessation, city, province, region, area, flag.imputed)

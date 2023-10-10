@@ -13,12 +13,13 @@ guarantors$id.bor <- paste0("g", seq_len(nrow(guarantors)))
 
 # role is of type factor (Other|Guarantor|Borrower) -> depends on which columns of Loans is (borrower.name or guarantor.name) 
 COUNTERPARTIES <- bind_rows(
-  mutate(borrowers, role = factor('borrower')),
-  mutate(guarantors, role = factor('guarantor'))
+  mutate(borrowers, role = factor('borrower', levels = c('borrower', 'guarantor', 'other'))),
+  mutate(guarantors, role = factor('guarantor', levels = c('borrower', 'guarantor', 'other')))
 )
 
 # n.entities is of type integer -> it's a count of the amount of values usually splited by a comma (can be a -)
-COUNTERPARTIES$n.entities <- str_count(COUNTERPARTIES$name, ',') + 1
+COUNTERPARTIES <- COUNTERPARTIES %>%
+  mutate(n.entities = as.integer(str_count(name, ',') + 1))
 
 COUNTERPARTIES <- COUNTERPARTIES %>%
   mutate(
