@@ -28,18 +28,18 @@ LOANS.Original <- DT$LOANS
 
 
 #Create the NDG dataframe, with the data ready to be dealt with 
-source("Ndg.R")
+source("tables/Ndg.R")
 
 #Creation of the LOANS_FROM_METADATA dataframe according to the metadata we should work with. Leaves the LOANS table filled and clean. Creates an excel report.
-source("Loans.R")
+source("tables/Loans.R")
 
 #Creation of the Counterparties dataframe 
-source("Counterparties.R")
+source("tables/Counterparties.R")
 
 #Creation of the Entities dataframe
-source("Entities.R")
+source("tables/Entities.R")
 
 
 #Create link tables 
-source("link.loans.counterparties.R")
-source("link.counterparties.entities.R")
+source("tables/link.loans.counterparties.R")
+source("tables/link.counterparties.entities.R")
