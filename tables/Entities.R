@@ -30,7 +30,6 @@ ENTITIES <- ENTITIES %>%
     flag.imputed = NA
   )
 
-
 # Read the contents of the .paths file
 geoMetadataPath_value <- readLines(".paths.txt")
 geoMetadataPath_value <- grep("^geoMetadataPath=", geoMetadataPath_value)
@@ -53,8 +52,6 @@ if(any(ENTITIES$city %in% repeated_cities)){
 # Merge specific columns from 'city_info' into 'ENTITIES'
 ENTITIES <- ENTITIES %>%
   left_join(GEO.metadata %>% select(city, province, region, area), by = c("city" = "city"))
-
-
 
 ENTITIES$id.entity <- paste0("e", seq_len(nrow(ENTITIES)))
 
