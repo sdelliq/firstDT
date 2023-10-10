@@ -32,8 +32,8 @@ ENTITIES <- ENTITIES %>%
 
 # Read the contents of the .paths file
 paths_content <- readLines(".paths.txt")
-geoMetadataPath_value <- grep("^geoMetadataPath=", geoMetadataPath_value)
-geoMetadataPath_value <- sub("^geoMetadataPath=\\s*", "", paths_content[geoMetadataPath_value])
+geoMetadataPath_line <- grep("^geoMetadataPath=", paths_content)
+geoMetadataPath_value <- sub("^geoMetadataPath=\\s*", "", paths_content[geoMetadataPath_line])
 
 GEO.metadata <- read_excel(geoMetadataPath_value, sheet = "Geo")
 GEO.metadata <- GEO.metadata %>% mutate_all(tolower)
