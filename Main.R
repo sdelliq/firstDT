@@ -1,3 +1,17 @@
+###-----------------------------------------------------------------------###
+#-----             a) Environment                                       -----         
+###-----------------------------------------------------------------------###
+
+install.packages("renv")
+library(renv)
+renv::init() 
+#renv::install() #Only used when installing the packages for the first time
+#renv::update() #Only used if we want to update packages 
+renv::snapshot()
+
+###-----------------------------------------------------------------------###
+#-----             b) Importing libraries and functions                 -----         
+###-----------------------------------------------------------------------###
 source("Library.R")
 source("Functions.R")
 
@@ -7,6 +21,11 @@ DT <- read_doc_and_save_df(file)
 #Create a DF for the each sheet
 NDG.Original <- DT$NDG
 LOANS.Original <- DT$LOANS
+
+###-----------------------------------------------------------------------###
+#-----             c) Running the files. In order.                 -----         
+###-----------------------------------------------------------------------###
+
 
 #Create the NDG dataframe, with the data ready to be dealt with 
 source("Ndg.R")

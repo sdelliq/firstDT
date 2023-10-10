@@ -1,13 +1,4 @@
-###-----------------------------------------------------------------------###
-#-----             a) Environment                                       -----         
-###-----------------------------------------------------------------------###
 
-install.packages("renv")
-library(renv)
-renv::init() 
-#renv::install() #Only used when installing the packages for the first time
-#renv::update() #Only used if we want to update packages 
-renv::snapshot()
 
 ###-----------------------------------------------------------------------###
 #-----             b) Importing libraries and functions                 -----         
