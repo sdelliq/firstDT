@@ -31,7 +31,7 @@ ENTITIES <- ENTITIES %>%
   )
 
 # Read the contents of the .paths file
-geoMetadataPath_value <- readLines(".paths.txt")
+paths_content <- readLines(".paths.txt")
 geoMetadataPath_value <- grep("^geoMetadataPath=", geoMetadataPath_value)
 geoMetadataPath_value <- sub("^geoMetadataPath=\\s*", "", paths_content[geoMetadataPath_value])
 
