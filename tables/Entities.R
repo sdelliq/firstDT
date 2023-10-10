@@ -31,10 +31,15 @@ ENTITIES <- ENTITIES %>%
   )
 
 
-#To do the mapping I should check first if there are cities with the same name in different provinces/regions
+# Read the contents of the .paths file
+geoMetadataPath_value <- readLines(".paths.txt")
+geoMetadataPath_value <- grep("^geoMetadataPath=", geoMetadataPath_value)
+geoMetadataPath_value <- sub("^geoMetadataPath=\\s*", "", paths_content[geoMetadataPath_value])
 
-GEO.metadata <- read_excel("C:/Users/sophia.dellarciprete/iQera Italia SpA/Advisory Team - formation_2023/data/data_model/Metadata_2022_12_21.xlsx", sheet = "Geo")
+GEO.metadata <- read_excel(geoMetadataPath_value, sheet = "Geo")
 GEO.metadata <- GEO.metadata %>% mutate_all(tolower)
+
+#To do the mapping I should check first if there are cities with the same name in different provinces/regions
 repeated_cities <- c("calliano", "castro", "livo", "peglio", "samone", "san teodoro") 
 # repeated_cities <- GEO.metadata %>%
 #   group_by(city) %>%
