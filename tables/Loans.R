@@ -54,10 +54,20 @@ LOANS_FROM_METADATA$type <- LOANS_FROM_METADATA$type %>% lapply(function(x){
   else if(x == "mutuo ipotecario"){
     x <- 'Mortgages'
   }
-  else if(x == "credito di firma" || x == "mutuo chiro" || x == "mutuo chirografario"){
+  else if(x == "mutuo chiro" || x == "mutuo chirografario"){
     x <- 'Personal Loans'
   }
+  else if(x == "credito di firma"){
+    x <- 'Other'
+  }
+  else if(str_match(x, "fondario")){
+    x <- 'Mortgages (Fondiario)'
+  }
+  else if(str_match(x, "credit card")){
+    x <- 'Credit Cards'
+  }
   else {
+    x <- NA
     print("check the type column for a missing classification")
   }
 })
