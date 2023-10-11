@@ -57,21 +57,26 @@ r.borrowersBy.StatusOfLoans <- LOANS_FROM_METADATA %>%
 
 
 # -number and ratio of borrowers, number of loans, by gbv clusters (buckets) (create 3 clusters that make sense)
-r.borrowersBy.GBVclusters <- LOANS_FROM_METADATA %>% 
+r.borrowersBy.GBVclusters <- LOANS_FROM_METADATA %>%
   select(id.loans, id.bor, gbv.original) %>%
+  mutate(Quartile = ntile(gbv.original, 3)) %>%
   mutate(
-    Quartile = ntile(gbv.original, 3),
-    GBV_Range = case_when(
-      Quartile == 1 ~ paste0("0 - ", round(quantile(gbv.original, 0.25))),
-      Quartile == 2 ~ paste0(round(quantile(gbv.original, 0.25)) + 1, " - ", round(quantile(gbv.original, 0.5))),
-      Quartile == 3 ~ paste0(round(quantile(gbv.original, 0.5)) + 1, " - ", round(max(gbv.original)))
+    GBV_Range = cut(
+      gbv.original,
+      breaks = quantile(gbv.original, probs = c(0, 0.25, 0.5, 1)),
+      labels = c(
+        paste0("0 - ", round(quantile(gbv.original, 0.25))),
+        paste0(round(quantile(gbv.original, 0.25) + 1), " - ", round(quantile(gbv.original, 0.5))),
+        paste0(round(quantile(gbv.original, 0.5) + 1), " - ", round(max(gbv.original)))
+      ),
+      include.lowest = TRUE
     )
   )
 
 uniqueIDbor.quartile <- r.borrowersBy.GBVclusters %>% select(id.bor,  Quartile) %>% n_distinct()
 
 r.borrowersBy.GBVclusters <-  r.borrowersBy.GBVclusters %>%    
-  group_by(Quartile, GBV_Range) %>%
+  group_by(GBV_Range) %>%
       summarise(
         'Amount of Borrowers' = n_distinct(id.bor),
         'Ratio of Borrowers' = n_distinct(id.bor)/uniqueIDbor.quartile,
@@ -99,10 +104,39 @@ r.borrowersBy.Area <- borrowerANDarea %>%
 
 
 # -a pivot(cross table or contingency table (https://en.wikipedia.org/wiki/Contingency_table)) of sum gvb by gbv clusters that you create and loans with/without guarantors
+quartiles <- r.borrowersBy.GBVclusters$GBV_Range
+loan.borrower.guarantor <- LOANS %>% 
+  select(borrower.name, guarantors.name, gbv.original) %>%
+  mutate (gbv.original = as.numeric(gbv.original))
+  # %>% group_by(borrower.name, guarantors.name) 
+quartiles_levels <- levels(quartiles)
+loan.borrower.guarantor[, quartiles_levels] <- 0
 
+process_g <- function(df, col_names) {
+  for (col_name in col_names) {
+    # Extract the min and max values from the column name range
+    range_values <- as.numeric(unlist(strsplit(col_name, "-")))
+    min_val <- range_values[1]
+    max_val <- range_values[2]
+    
+    # Update the corresponding column based on the condition
+    df[[col_name]] <- ifelse(df$gbv.original > min_val & df$gbv.original < max_val, 1, 0)
+  }
+  
+  return(df)
+}
+processed_df <- process_g(loan.borrower.guarantor, quartiles)
 
+processed_df <- processed_df %>% select (-gbv.original) %>%
+  group_by(borrower.name, guarantors.name) %>%
+  summarise(across(quartiles, ~sum(., na.rm = TRUE)))
 
-
+r.crossTable <- processed_df %>%
+  mutate(has_guarantor = ifelse(!is.na(guarantors.name) & guarantors.name != "", "With Guarantor", "Without Guarantor")) %>%
+  group_by(has_guarantor) %>%
+  summarise(
+    across(quartiles, sum),
+  )
 
 
 
