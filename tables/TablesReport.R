@@ -20,7 +20,7 @@ r.numberOfBorrowersOverall <- NDG %>% summarise("# Borrowers" = n_distinct(ndg))
 
 # -sum gbv overall
 r.sumGBVoverall <- LOANS_FROM_METADATA %>% summarise("GBV Sum" = sum(gbv.original))
-r.sumGBVoverall <- as.numeric(r.sumGBVoverall)
+r.sumGBVoverall <- as.data.frame(r.sumGBVoverall)
 
 
 # -number and ratio of borrowers, number of loans, sum and mean gbv by loans with/without guarantors 
