@@ -66,25 +66,6 @@ summary_row <- r.borrowersBy.TypeOfLoans %>%
 r.borrowersBy.TypeOfLoans <- rbind(summary_row, r.borrowersBy.TypeOfLoans) %>% rename ("Loan Type" = type)
 
 
-# -number and ratio of borrowers, number of loans, sum and mean gbv by status of loan and gbv clusters
-uniqueIDbor.combination <- LOANS_FROM_METADATA %>% select(id.bor, status) %>% n_distinct()
-r.borrowersBy.StatusOfLoans <- LOANS_FROM_METADATA %>% 
-  select(id.loans, id.bor, status, gbv.original) %>%
-  group_by(status) %>%
-  summarise(
-    '# Borrowers' = n_distinct(id.bor),
-    '% Borrowers' = n_distinct(id.bor)/uniqueIDbor.combination,
-    '# Loans' = n(),
-    'GBV Sum' = sum(as.numeric(gbv.original)),
-    'GBV Mean' = mean(as.numeric(gbv.original))
-  )  
-summary_row <- r.borrowersBy.StatusOfLoans %>%
-  summarize(
-    status = "Totals",
-    across(c(`# Borrowers`, `% Borrowers`, `# Loans`, `GBV Sum`), sum),
-    `GBV Mean` = mean(`GBV Mean`)
-  ) 
-r.borrowersBy.StatusOfLoans <- rbind(summary_row, r.borrowersBy.StatusOfLoans) %>% rename ("Loan Status" = status)
 
 
 # -number and ratio of borrowers, number of loans, by gbv clusters (buckets) (create 3 clusters that make sense)
@@ -98,12 +79,11 @@ r.borrowersBy.GBVclusters <- borrowerMartTable %>%
       labels = c(
         paste0("0 - ", round(quantile(gbv.original, 0.25))),
         paste0(round(quantile(gbv.original, 0.25) + 1), " - ", round(quantile(gbv.original, 0.5))),
-        paste0(round(quantile(gbv.original, 0.5) + 1), " - ", round(max(gbv.original)))
+        paste0(round(quantile(gbv.original, 0.5) + 1), " - ", Inf)
       ),
       include.lowest = TRUE
     )
   )
-
 uniqueIDbor.combination <- r.borrowersBy.GBVclusters %>% select(id.counterparty,  Quartile) %>% n_distinct()
 r.borrowersBy.GBVclusters <-  r.borrowersBy.GBVclusters %>%    
   group_by(GBV_Range) %>%
@@ -114,6 +94,7 @@ r.borrowersBy.GBVclusters <-  r.borrowersBy.GBVclusters %>%
         'GBV Sum' = sum(as.numeric(gbv.original)),
         'GBV Mean' = mean(as.numeric(gbv.original))
       )
+GBV_range <- unique(r.borrowersBy.GBVclusters$GBV_Range) #Es una herramienta sorpresa que nos servira mas adelante 
 summary_row <- r.borrowersBy.GBVclusters %>%
   summarize(
     GBV_Range = "Totals",
@@ -121,6 +102,38 @@ summary_row <- r.borrowersBy.GBVclusters %>%
     `GBV Mean` = mean(`GBV Mean`)
   ) 
 r.borrowersBy.GBVclusters <- rbind(summary_row, r.borrowersBy.GBVclusters) %>% rename ("GBV" = GBV_Range)
+
+
+# -number and ratio of borrowers, number of loans, sum and mean gbv by status of loan and gbv clusters
+uniqueIDbor.combination <- LOANS_FROM_METADATA %>% select(id.bor, status) %>% n_distinct()
+r.borrowersBy.StatusOfLoans <- LOANS_FROM_METADATA %>% 
+  select(id.loans, id.bor, status, gbv.original) 
+r.borrowersBy.StatusOfLoans$gbv_range <- cut(r.borrowersBy.StatusOfLoans$gbv.original, breaks = c(0, 51539, 121208, Inf), labels = GBV_range)
+r.borrowersBy.StatusOfLoans <- r.borrowersBy.StatusOfLoans %>%
+  group_by(status, gbv_range) %>%
+  summarise(
+    '# Borrowers' = n_distinct(id.bor),
+    '% Borrowers' = n_distinct(id.bor)/uniqueIDbor.combination,
+    '# Loans' = n(),
+    'GBV Sum' = sum(as.numeric(gbv.original)),
+    'GBV Mean' = mean(as.numeric(gbv.original))
+  )  
+summary_row <- r.borrowersBy.StatusOfLoans %>%
+  group_by(status) %>%
+  summarize(
+    gbv_range = n(),
+    across(c(`# Borrowers`, `% Borrowers`, `# Loans`, `GBV Sum`), sum),
+    `GBV Mean` = mean(`GBV Mean`)
+  ) 
+summary_row$status <- ifelse(summary_row$status == "utp", "Subtotal UTP", "Subtotal Bad")
+r.borrowersBy.StatusOfLoans <- rbind(summary_row, r.borrowersBy.StatusOfLoans) 
+summary_row <- summary_row %>% summarize(
+    status= "Totals",
+    across(c(gbv_range, `# Borrowers`, `% Borrowers`, `# Loans`, `GBV Sum`), sum),
+    `GBV Mean` = mean(`GBV Mean`)
+  ) 
+r.borrowersBy.StatusOfLoans <- rbind(summary_row, r.borrowersBy.StatusOfLoans) %>% rename ("Loan Status" = status)
+
 
 # -number and ratio of borrowers, number of loans, by area
 borrowerANDarea <- COUNTERPARTIES %>% select (id.counterparty, role) %>% filter(role == "borrower") %>%
@@ -156,6 +169,10 @@ pivot_table <- borrowerMartTable %>%
 pivot_table$flag_Guarantor <- ifelse(pivot_table$flag_Guarantor == TRUE, "With Guarantor", "Without Guarantor")
 
 summary_row <- pivot_table %>%
+  summarize(
+    flag_Guarantor = "Totals",
+    across(c(`0-51539`, `51540-121208`, `121209-2687170`), sum)
+  ) %>%
   summarize(
     flag_Guarantor = "Totals",
     across(c(`0-51539`, `51540-121208`, `121209-2687170`), sum)
