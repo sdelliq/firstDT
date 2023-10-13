@@ -178,3 +178,21 @@ summary_row <- pivot_table %>%
   ) 
 pivot_table <- rbind(summary_row, pivot_table) 
 
+
+
+#Graphs
+# Create a bar chart
+# Assuming r.borrowersBy.TypeOfLoans is your dataframe
+
+library(ggplot2)
+
+ggplot(r.borrowersBy.TypeOfLoans, aes(x = `Loan Type`)) +
+  geom_bar(aes(y = `# Borrowers`), stat = "identity", position = "dodge", fill = "blue", alpha = 0.7) +
+  geom_bar(aes(y = `# Loans`), stat = "identity", position = "dodge", fill = "green", alpha = 0.7) +
+  geom_bar(aes(y = `GBV Sum`), stat = "identity", position = "dodge", fill = "red", alpha = 0.7) +
+  labs(title = "Comparison of Metrics Across Loan Types",
+       y = "Count or Sum",
+       x = "Loan Type") +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M"))
+
