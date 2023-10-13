@@ -5,6 +5,7 @@
 # install.packages('openxlsx')
 # install.packages('rlang')
 # install.packages("readxl")
+install.packages("ggplot2")
 
 library(readxl)
 library(dplyr)
@@ -12,3 +13,4 @@ library(tidyr)
 library(rlang)
 library(openxlsx)
 library(stringr)
+library(ggplot2)
