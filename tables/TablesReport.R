@@ -66,8 +66,6 @@ summary_row <- r.borrowersBy.TypeOfLoans %>%
 r.borrowersBy.TypeOfLoans <- rbind(summary_row, r.borrowersBy.TypeOfLoans) %>% rename ("Loan Type" = type)
 
 
-
-
 # -number and ratio of borrowers, number of loans, by gbv clusters (buckets) (create 3 clusters that make sense)
 quantiles <- quantile(borrowerMartTable$gbv.original, c(1/3, 2/3))
 print(quantiles)
@@ -125,7 +123,16 @@ summary_row <- summary_row %>% summarize(
     `GBV Mean` = mean(`GBV Mean`)
   ) 
 r.borrowersBy.StatusOfLoans <- rbind(summary_row, r.borrowersBy.StatusOfLoans) %>% rename ("Loan Status" = status)
-
+r.borrowersBy.StatusOfLoans <- r.borrowersBy.StatusOfLoans %>%
+  mutate(Sort_Order = case_when(
+    `Loan Status` == "Totals" ~ 1,
+    `Loan Status` == "bad" ~ 2,
+    `Loan Status` == "Subtotal Bad" ~ 3,
+    `Loan Status` == "utp" ~ 4,
+    `Loan Status` == "Subtotal UTP" ~ 5
+  )) %>%
+  arrange(Sort_Order) %>%
+  select(-Sort_Order)
 
 # -number and ratio of borrowers, number of loans, by area
 borrowerANDarea <- COUNTERPARTIES %>% select (id.counterparty, role) %>% filter(role == "borrower") %>%
@@ -148,9 +155,9 @@ summary_row <- r.borrowersBy.Area %>%
 r.borrowersBy.Area <- rbind(summary_row, r.borrowersBy.Area) 
 
 # -a pivot(cross table or contingency table (https://en.wikipedia.org/wiki/Contingency_table)) of sum gvb by gbv clusters that you create and loans with/without guarantors
-borrowerMartTable <- borrowerMartTable %>%
-  mutate(bucket = cut(gbv.original, breaks = breaks, labels = range.gbv, include.lowest = TRUE))
 pivot_table <- borrowerMartTable %>%
+  mutate(bucket = cut(gbv.original, breaks = breaks, labels = range.gbv, include.lowest = TRUE))
+pivot_table <- pivot_table %>%
   group_by(flag_Guarantor, bucket) %>%
   summarise(gbv_sum = sum(gbv.original)) %>%
   pivot_wider(
