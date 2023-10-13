@@ -3,11 +3,11 @@
 #-----   Creation of Tables by Borrower and By Loan                     -----         
 ###-----------------------------------------------------------------------###
 # -number of borrowers overall
-r.numberOfBorrowersOverall <- borrowerMartTable %>% summarise("# Borrowers" = n_distinct(id.counterparty))
+r.numberOfBorrowersOverall <- LOANS_FROM_METADATA %>% summarise("# Borrowers" = n_distinct(id.bor))
 
 
 # -sum gbv overall
-r.sumGBVoverall <- borrowerMartTable %>% summarise("GBV Sum" = sum(gbv.original))
+r.sumGBVoverall <- LOANS_FROM_METADATA %>% summarise("GBV Sum" = sum(gbv.original))
 r.sumGBVoverall <- as.data.frame(r.sumGBVoverall)
 
 
@@ -134,7 +134,7 @@ r.borrowersBy.StatusOfLoans <- r.borrowersBy.StatusOfLoans %>%
   mutate(id.loans_count = n(), gbv.original = sum (gbv.original)) %>%
   slice(which.max(as.numeric(gbv_range)))
 uniqueIDbor.combination <- r.borrowersBy.StatusOfLoans %>% select(id.bor, status) %>% n_distinct()
-
+complete_ref <- expand.grid(status = unique(r.borrowersBy.StatusOfLoans$status), gbv_range = unique(r.borrowersBy.StatusOfLoans$gbv_range))
 r.borrowersBy.StatusOfLoans <- r.borrowersBy.StatusOfLoans %>%
   group_by(status, gbv_range) %>% 
   summarise(
