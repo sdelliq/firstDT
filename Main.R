@@ -43,3 +43,6 @@ source("tables/Entities.R")
 #Create link tables 
 source("tables/link.loans.counterparties.R")
 source("tables/link.counterparties.entities.R")
+
+#Create report tables
+source("tables/TablesReport.R")
