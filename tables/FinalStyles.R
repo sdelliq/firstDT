@@ -12,7 +12,6 @@ style1_header <- createStyle(
 
 style1_rows <- createStyle(
   numFmt = "0.0,,\"M\"",
-  fgFill = "#F3EEE0",
   fontSize = 10,
   halign = "center",
   valign = "center",
@@ -47,17 +46,27 @@ percentage_rows <- createStyle(
   fontColour = "black"
 )
 
-writeData(wb, sheet = "MySheet", x = r.sumGBVoverall, startCol = 1, startRow = 1,headerStyle = style1_header)
-addStyle(wb, sheet = "MySheet", style = style1_rows, rows = 2:(nrow(r.sumGBVoverall)+1), cols = 1:ncol(r.sumGBVoverall),stack = TRUE)
+writeData(wb, sheet = "MySheet", x = "Gross Book Value Summarized", startCol = 1, startRow = 1)
 
+writeDataTable(wb, 1, x = r.sumGBVoverall , startRow = 2,
+               startCol = 1,  withFilter = FALSE, tableStyle =  "TableStyleMedium2")
+
+#addStyle(wb, sheet = "MySheet", style = style1_header, rows = 2:nrow(r.sumGBVoverall+1), cols = 1:ncol(r.sumGBVoverall),stack = TRUE)
+
+
+addStyle(wb, sheet = "MySheet", style = style1_rows, rows = 3:(nrow(r.sumGBVoverall)+1), cols = 1:ncol(r.sumGBVoverall))
+
+saveWorkbook(wb, file = "multiple_tables_with_custom_styles.xlsx")
 
 ######################################################################
 
 
-writeData(wb, sheet = "MySheet", x = r.numberOfBorrowersOverall, startCol = 1, startRow = nrow(r.sumGBVoverall)+3,headerStyle = style1_header)
+writeData(wb, sheet = "MySheet", x = "Number Of Borrowers", startCol = 1, startRow = nrow(r.sumGBVoverall)+4,headerStyle = style1_header)
+writeDataTable(wb, 1, x = r.numberOfBorrowersOverall , startRow = 6,
+               startCol = 1,  withFilter = FALSE, tableStyle =  "TableStyleMedium2")
 
 #addStyle(wb, sheet = "MySheet", style = style2_rows, rows = 2:(nrow(r.numberOfBorrowersOverall)+1), cols = 1:ncol(r.numberOfBorrowersOverall),stack = TRUE)
-addStyle(wb, sheet = "MySheet", style = style2_rows, rows = 5, cols = 1:ncol(r.numberOfBorrowersOverall),stack = TRUE)
+addStyle(wb, sheet = "MySheet", style = style2_rows, rows = 7, cols = 1:ncol(r.numberOfBorrowersOverall),stack = TRUE)
 
 
 writeData(wb, sheet = "MySheet", x = r.borrowersByLoans.W.and.WO.guarantors, startCol = 1, startRow = nrow(r.sumGBVoverall)+nrow(r.numberOfBorrowersOverall)+5,headerStyle = style1_header)
