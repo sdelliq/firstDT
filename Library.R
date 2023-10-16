@@ -7,8 +7,9 @@
 # install.packages("readxl")
 #install.packages("ggplot2")
 #install.packages("scales")
-install.packages("feather")
-install.packages("arrow")
+install.packages("feather", repos ="https://cloud.r-project.org")
+install.packages("arrow", repos ="https://cloud.r-project.org")
+# install.packages("ggplot2",repos ="https://cloud.r-project.org")
 
 library(readxl)
 library(dplyr)
