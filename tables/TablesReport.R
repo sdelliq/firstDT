@@ -227,6 +227,7 @@ r.byLoans.W.WO.guarantors <- loansMartTable %>%
   mutate(
     '% Borrowers' = `# Borrowers` /  sum(`# Borrowers`)
   ) 
+r.byLoans.W.WO.guarantors_forGraph <- r.byLoans.W.WO.guarantors
 summary_row <- r.byLoans.W.WO.guarantors %>%
   summarize(
     has_guarantor = "Totals",
@@ -301,7 +302,8 @@ r.byLoan.Status <- r.byLoan.Status %>%
     '# Loans' = n(),
     'GBV Sum' = sum(as.numeric(gbv.original)),
     'GBV Mean' = mean(as.numeric(gbv.original))
-  )  
+  )
+r.byLoan.Status_forGraph <- r.byLoan.Status
 summary_row <- r.byLoan.Status %>%
   group_by(status) %>%
   summarize(
@@ -369,3 +371,21 @@ plot <- ggplot(r.TypeOfLoans.ForGraph, aes(x = type)) +
   theme_minimal() +
   scale_y_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M"))
 
+
+r.byLoan.Status_forGraph <- r.byLoan.Status_forGraph %>%
+  mutate(GBV_Sum_Labels = ifelse(`GBV Sum` >= 1e6, sprintf("%.1f%s", `GBV Sum` / 1e6, "M"), sprintf("%.0f%s", `GBV Sum` / 1e3, "k")))
+plotByLoansStatus<- ggplot(r.byLoan.Status_forGraph, aes(x = `status`, y = `# Borrowers`, fill = `status`)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = GBV_Sum_Labels), position = position_stack(vjust = 0.5), color = "black", size = 3) +
+  ggtitle("Distribution of Loan Status and GBV Sum") +
+  xlab("Loan Status") +
+  ylab("# Borrowers")
+
+
+plotByLoansGuarantor <- ggplot(r.byLoans.W.WO.guarantors_forGraph, aes(x = has_guarantor, fill = has_guarantor)) +
+  geom_bar(aes(y = `# Borrowers`), position = "stack", stat = "identity") +
+  geom_bar(aes(y = `# Loans`), position = "stack", stat = "identity", alpha = 0.7) +
+  ggtitle("Borrowers and Loans by Guarantor Status") +
+  xlab("Loans") +
+  ylab("# Borrowers   and   # Loans") +
+  scale_fill_manual(values = c("lightblue", "lightgreen")) 
