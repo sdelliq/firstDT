@@ -46,3 +46,6 @@ source("tables/link.counterparties.entities.R")
 
 #Create report tables
 source("tables/TablesReport.R")
+
+#Run the checks on all the tables
+source("checks.R")

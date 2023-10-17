@@ -1,20 +1,35 @@
+###-----------------------------------------------------------------------###
+#-----      Writing the feather files of the dataframes                -----         
+###-----------------------------------------------------------------------###
 
-#Writing the feather files of the dataframes
-write_feather(ENTITIES, "feather/entities.feather")
-write_feather(COUNTERPARTIES, "feather/counterparties.feather")
-write_feather(LOANS, "feather/loans.feather")
-write_feather(link.counterparties.entities, "feather/link_c_e.feather")
-write_feather(link.loans.counterparties, "feather/link_l_c.feather")
+# write_feather(ENTITIES, "feather/entities.feather")
+# write_feather(COUNTERPARTIES, "feather/counterparties.feather")
+# write_feather(LOANS, "feather/loans.feather")
+# write_feather(link.counterparties.entities, "feather/link_c_e.feather")
+# write_feather(link.loans.counterparties, "feather/link_l_c.feather")
 
-#Reading the feather files
+###-----------------------------------------------------------------------###
+#-----              Reading the feather files                          -----         
+###-----------------------------------------------------------------------###
+
 f_entities <- read_feather("feather/entities.feather")
 f_counterparties <- read_feather("feather/counterparties.feather")
 f_loans <- read_feather("feather/loans.feather")
 f_link_c_e <- read_feather("feather/link_c_e.feather")
 f_link_l_c <- read_feather("feather/link_l_c.feather")
 
-#Running checks 
-# - Counterparties Table
+###-----------------------------------------------------------------------###
+#-----                     Running checks                              -----         
+###-----------------------------------------------------------------------###
+
+###-----------------------------------------------------------------------###
+#-----      Common Functions (usefull for more than one table)          -----         
+###-----------------------------------------------------------------------###
+
+
+###-----------------------------------------------------------------------###
+#-----                  Counterparties Table                           -----         
+###-----------------------------------------------------------------------###
 
 # -- Within a given ID_Bor, ID_Counterparties should not be redundant from the point of view of entities (i.e. if all entities in ID1 coincide with part of the entities in ID2, ID2 should be dropped, and its guarantee links attributed to ID1)
 
@@ -34,34 +49,35 @@ check_subset_relationship <- function(df) {
         if (cp1 != cp2) {
           subset_check <- all(counterparty_entities[[cp1]] %in% counterparty_entities[[cp2]])
           if (subset_check) {
-            cat("Counterparty", cp1, "is a subset of Counterparty", cp2, "\n")
+            cat("Redundancy found. Counterparty", cp1, "is a subset of Counterparty", cp2, "\n")
           }
         }
       }
     }
   }
 }
-
-# Example 
-df <- data.frame(
-  id.counterparty = c(1, 1, 2, 2, 2, 3, 4, 5, 5),
-  id.entity = c("A", "B", "A", "B", "C", "E", "K", "B", "C")
-)
-
-check_subset_relationship(df)
+# # Example df to see the code work
+# df <- data.frame(
+#   id.counterparty = c(1, 1, 2, 2, 2, 3, 4, 5, 5),
+#   id.entity = c("A", "B", "A", "B", "C", "E", "K", "B", "C")
+# )
+check_subset_relationship(f_counterparties)
 
 
 #The ID must exist in Link_Counterparty_Entity
-check_counterparties <- function(df, counterparties_df) {
-  unique_counterparties <- unique(df$id.counterparty)
-  missing_counterparties <- setdiff(unique_counterparties, counterparties_df$id.counterparty)
-  if (length(missing_counterparties) == 0) {
-    print("All counterparty IDs are present in the counterparties_df.")
+check_id_inLinkingTable <- function(linkingTable, entity_or_counterparty_df, id_column) {
+  unique_ids <- unique(linkingTable[[id_column]])
+  missing_ids <- setdiff(unique_ids, entity_or_counterparty_df[[id_column]])
+  
+  if (length(missing_ids) == 0) {
+    return(paste0("Every ", id_column, " from ", deparse(substitute(entity_or_counterparty_df)), " is present in the linking table"))
   } else {
-    cat("Missing counterparty IDs:", missing_counterparties, "\n")
+    return(paste0("Not every ", id_column, "from", deparse(substitute(entity_or_counterparty_df)), " is present in the linking table. Missing ", id_column, "s:", missing_ids, "\n"))
   }
 }
-check_counterparties(f_link_c_e, f_counterparties)
+
+# Example usage with modified names
+check_id_inLinkingTable(f_link_c_e, f_counterparties, "id.counterparty")
 
 
 #it measures, for a given ID_Counterparty, the number of ID_Entity in Link_Counterparty_Entity
@@ -76,7 +92,7 @@ check_entity_counts <- function(counterparties, link_c_e) {
     expected_count <- entity_counts[counterparty_id == unique_counterparties]
     
     if (count_in_link_c_e != expected_count) {
-      cat("Mismatch for Counterparty", counterparty_id, ": Expected", expected_count, "but found", count_in_link_c_e, "\n")
+      cat("Mismatch for Counterparty in Link_Counterparty_Entity", counterparty_id, ": Expected", expected_count, "but found", count_in_link_c_e, "\n")
     }
   }
 }
@@ -100,16 +116,65 @@ check_name_format <- function(df) {
     print("All 'name' values are in lowercase.")
   }
 }
-# Example usage
-df <- data.frame(
-  name = c("Some Company", "Another COMPANY", "S.R.L Corporation", "DI Solutions", "sncm Logistics")
-)
-
-check_name_format(df)
-
+# # Example to see the code work
+# df <- data.frame(
+#   name = c("Some Company", "Another COMPANY", "S.R.L Corporation", "DI Solutions", "sncm Logistics")
+# )
+check_name_format(f_counterparties)
 
 
-# - Entities Table
+###-----------------------------------------------------------------------###
+#-----                     Entities Table                              -----         
+###-----------------------------------------------------------------------###
+
 
 #The ID must exist in Link_Counterparty_Entity
 check_counterparties(f_link_c_e, f_entities)
+
+
+#For the cf.piva column, Unless NULL, there should not be duplicates
+check_duplicates_cf.piva <- function(data, column) {
+  notNull <- data[[column]][!is.na(data[[column]])]
+  
+  duplicates <- notNull[duplicated(notNull)]
+  
+  if (length(duplicates) == 0) {
+    return(paste("There are no duplicates in the", column, "column."))
+  } else {
+    return(paste("Duplicate values found in the", column, "column:", toString(unique(duplicates))))
+  }
+}
+#Dataframe to see the code work
+# df <- data.frame(
+#   cf.piva = c(123456789, 987654321, 123456789, 555555555, NA, 987654321),
+#   other_column = c("A", "B", "C", "D", "E", "F")
+# )
+check_duplicates_cf.piva(f_entities, "cf.piva")
+
+
+#There must be at least one entity for every id_counterparty.
+check_associations <- function(ids_in_counterparty, ids_in_linking_table, id_type) {
+  if (n_distinct(ids_in_counterparty) == n_distinct(ids_in_linking_table)) {
+    return(paste("There is at least one", id_type, "for every", id_type))
+  } else {
+    missing_ids <- setdiff(ids_in_counterparty, ids_in_linking_table)
+    return(paste("Some", id_type, "are not associated with at least one entity. Here's the list:", missing_ids))
+  }
+}
+check_associations(f_counterparties$id.counterparty, f_link_c_e$id.counterparty, "id_counterparty")
+
+
+#'- if cf.piva is a fiscal code ==> individual;
+# - if cf.piva is a p.iva ==> corporate, confidi, or other (NOT individual)
+# - if cf.piva is N/A, no rules apply (there can't be inconsistency in this case)
+cf.piva_and_type <- f_entities %>% select(cf.piva, type.subject) %>% filter(nchar(cf.piva) == 16) 
+non_individuals <- cf.piva_and_type %>% filter(type.subject != "individual")
+if (nrow(non_individuals) == 0) {
+  print("All CFs belong to individuals")
+} else {
+  print(paste("The following CFs are not classified as individuals:", toString(non_individuals$cf.piva)))
+}
+
+
+
+
